@@ -14,6 +14,8 @@
 
 namespace Causal\IgLdapSsoAuth\Domain\Repository;
 
+use TYPO3\CMS\Core\Database\ConnectionPool;
+use TYPO3\CMS\Core\Database\Query\QueryBuilder;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Backend\Utility\BackendUtility;
 
@@ -45,10 +47,15 @@ class ConfigurationRepository
      */
     public function findAll()
     {
-        $where = '1=1' . $this->getWhereClauseForEnabledFields();
+        $queryBuilder = GeneralUtility::makeInstance(ConnectionPool::class)->getQueryBuilderForTable($this->table);
 
-        $rows = static::getDatabaseConnection()->exec_SELECTgetRows('*', $this->table, $where, '', 'sorting');
-
+        //$where = '1=1' . $this->getWhereClauseForEnabledFields();
+        //$rows = static::getDatabaseConnection()->exec_SELECTgetRows('*', $this->table, $where, '', 'sorting');
+        $rows = $queryBuilder
+            ->select('*')
+            ->from($this->table)
+            ->execute()
+            ->fetchAll();
         $configurations = [];
         foreach ($rows as $row) {
             /** @var \Causal\IgLdapSsoAuth\Domain\Model\Configuration $configuration */
@@ -68,9 +75,14 @@ class ConfigurationRepository
      */
     public function findByUid($uid)
     {
-        $where = 'uid=' . (int)$uid . $this->getWhereClauseForEnabledFields();
-
-        $row = static::getDatabaseConnection()->exec_SELECTgetSingleRow('*', $this->table, $where);
+        $queryBuilder = GeneralUtility::makeInstance(ConnectionPool::class)->getQueryBuilderForTable($this->table);
+        //$where = 'uid=' . (int)$uid . $this->getWhereClauseForEnabledFields();
+        //$row = static::getDatabaseConnection()->exec_SELECTgetSingleRow('*', $this->table, $where);
+        $row = $queryBuilder
+            ->select('*')
+            ->from($this->table)
+            ->execute()
+            ->fetch();
         if ($row) {
             /** @var \Causal\IgLdapSsoAuth\Domain\Model\Configuration $configuration */
             $configuration = GeneralUtility::makeInstance(\Causal\IgLdapSsoAuth\Domain\Model\Configuration::class);
